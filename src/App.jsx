@@ -73,12 +73,12 @@ END:VCARD`;
     const MAX_RETRIES = 2;
     const RETRY_DELAY = 300;
     let attempt = 0;
-  
+
     const errorHandler = (error) => {
       console.error(`Attempt ${attempt} failed:`, error);
       alert(translations[selectedLanguage]['downloadError']);
     };
-  
+
     const tryDownload = async () => {
       try {
         attempt++;
@@ -87,23 +87,23 @@ END:VCARD`;
           const qrUrl = getQRCodeUrl(data, type);
           const response = await fetch(qrUrl);
           if (!response.ok) throw new Error('Network response error');
-          
+
           // Convert directly to base64
           const buffer = await response.arrayBuffer();
           const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
           window.Telegram.WebApp.downloadFile(base64, `${filename}.png`);
           return;
         }
-  
+
         // Strategy 2: Canvas-based download with forced user gesture
         const canvas = await generateQRCanvas(data, type);
         if (!canvas) throw new Error('Canvas generation failed');
-  
+
         // Strategy 3: Mixed blob/base64 approach
-        const blob = await new Promise(resolve => 
+        const blob = await new Promise(resolve =>
           canvas.toBlob(resolve, 'image/png', 1)
         );
-        
+
         // Strategy 4: Multiple download methods
         const finalAttempt = async () => {
           try {
@@ -113,40 +113,40 @@ END:VCARD`;
               window.Telegram.WebApp.openLink(dataUrl);
               return;
             }
-  
+
             // Method 4b: Simulated click with blob
             const url = URL.createObjectURL(blob);
             const tempLink = document.createElement('a');
             tempLink.href = url;
             tempLink.download = `${filename}.png`;
             tempLink.style.display = 'none';
-            
+
             // iOS requires actual user interaction
             const clickEvent = new MouseEvent('click', {
               view: window,
               bubbles: true,
               cancelable: true
             });
-            
+
             document.body.appendChild(tempLink);
             tempLink.dispatchEvent(clickEvent);
-            
+
             // Cleanup with retry safeguard
             setTimeout(() => {
               document.body.removeChild(tempLink);
               URL.revokeObjectURL(url);
             }, 1000);
-  
+
           } catch (error) {
             // Final fallback: Open in new tab
             const dataUrl = canvas.toDataURL();
             window.open(dataUrl, '_blank');
           }
         };
-  
+
         // Execute final attempt sequence
         await finalAttempt();
-  
+
       } catch (error) {
         if (attempt < MAX_RETRIES) {
           setTimeout(tryDownload, RETRY_DELAY);
@@ -155,7 +155,7 @@ END:VCARD`;
         }
       }
     };
-  
+
     // Initial execution
     try {
       await tryDownload();
@@ -163,25 +163,25 @@ END:VCARD`;
       errorHandler(finalError);
     }
   };
-  
+
   // Canvas generation with validation
   const generateQRCanvas = async (data, type) => {
     try {
       const qrUrl = getQRCodeUrl(data, type);
       const response = await fetch(qrUrl);
       if (!response.ok) throw new Error('Invalid QR code response');
-  
+
       const imgBlob = await response.blob();
       const imgUrl = URL.createObjectURL(imgBlob);
-      
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       // Load image with timeout
       const img = await new Promise((resolve, reject) => {
-        const timer = setTimeout(() => 
+        const timer = setTimeout(() =>
           reject(new Error('Image load timeout')), 5000);
-        
+
         const img = new Image();
         img.onload = () => {
           clearTimeout(timer);
@@ -190,12 +190,12 @@ END:VCARD`;
         img.onerror = reject;
         img.src = imgUrl;
       });
-  
+
       // Set canvas dimensions
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
-  
+
       // Add logo if present
       if (logoData) {
         const logoImg = await new Promise((resolve, reject) => {
@@ -204,24 +204,24 @@ END:VCARD`;
           img.onerror = reject;
           img.src = logoData;
         });
-  
+
         const logoSize = Math.min(canvas.width * 0.2, canvas.height * 0.2);
         const x = (canvas.width - logoSize) / 2;
         const y = (canvas.height - logoSize) / 2;
-  
+
         ctx.fillStyle = isNegative ? '#000000' : '#ffffff';
         ctx.fillRect(x, y, logoSize, logoSize);
         ctx.drawImage(logoImg, x, y, logoSize, logoSize);
       }
-  
+
       // Validate canvas content
       const imageData = ctx.getImageData(0, 0, 1, 1).data;
       if (imageData.every(channel => channel === 0)) {
         throw new Error('Blank canvas generated');
       }
-  
+
       return canvas;
-  
+
     } catch (error) {
       console.error('Canvas generation failed:', error);
       return null;
@@ -248,8 +248,8 @@ END:VCARD`;
   const handleLanguageChange = (event) => setSelectedLanguage(event.target.value);
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-gray-900 dark' : 'bg-gray-100 transition-colors duration-300'}`}>
-      <div className="px-4 py-8 mx-auto max-w-2xl">
+    <div className={`min-h-screen flex flex-col md:justify-center ${isDark ? 'bg-gray-900 dark' : 'bg-gray-100 transition-colors duration-300'}`}>
+      <div className="px-4 py-8 mx-auto w-full max-w-2xl">
         {/* Header section */}
         <div className="flex items-center mb-4">
           <div className="flex justify-center items-center mr-2 w-10 h-10 bg-gray-300 rounded-full dark:bg-gray-700">
@@ -283,6 +283,9 @@ END:VCARD`;
             >
               <option value="en">English</option>
               <option value="es">Español</option>
+              <option value="pt">Português</option>
+              <option value="it">Italiano</option>
+              <option value="zh">中文</option>
             </select>
             <button
               onClick={toggleDarkMode}
