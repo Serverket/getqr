@@ -1,28 +1,49 @@
 <div id="header" align="center">
-<img src="./public/chinchillaqr_hd.webp" alt="Chinchilla QR Cover" title="Chinchilla QR Cover" width="300">
+<img src="./public/getqr-logo.svg" alt="GetQR Logo" title="GetQR Logo" width="120">
 
-# Chinchilla QR &middot; ![Release Status](https://img.shields.io/badge/release-v1.0.0-brightgreen) [![npm version](https://img.shields.io/npm/v/react.svg?style=flat)](https://www.npmjs.com/package/react) [![GitHub license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
-A simple and powerful QR code generator crafted with React and Tailwind CSS.
+# GetQR &middot; ![Release Status](https://img.shields.io/badge/release-v2.1.0-brightgreen) [![npm version](https://img.shields.io/npm/v/react.svg?style=flat)](https://www.npmjs.com/package/react) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white) [![GitHub license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
+A simple and powerful QR code generator crafted with React 19, Tailwind CSS v4, and Framer Motion.
 </div>
 
 ## :gear: Install & Run
 
-You'll need at least `node 16` to compile everything:
+You'll need [Bun](https://bun.sh) installed:
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Run the application
-npm run dev
+bun dev
+
+# Build for production
+bun run build
+
+# Generate PWA icons from SVG source
+bun run generate-pwa-assets
 ```
 
 ## :star2: Main features
 
+**QR Code Generation:**
+* QR generation via [qrserver.com API](https://api.qrserver.com) (square, PNG + SVG)
+* **6 QR module styles** via [qr-code-styling](https://github.com/kozakdenys/qr-code-styling): square, dots, rounded, extra-rounded, classy, classy-rounded
+* One-click style cycle button with a live shape indicator icon
+* 4 gradient colour overlays (Violet, Amber, Ocean, Sunset) with `mix-blend-mode`
+* Rounded-corner toggle and inverted-colour toggle
+* Logo upload / drag-and-drop (SVG, PNG, JPG ≤ 2 MB)
+* All styles fully composited in preview, PNG download, SVG download, copy, and share
+
 **Frontend / UI:**
-* React
-* Tailwind CSS
-* QR Code generation using [qr-image](https://www.npmjs.com/package/qr-image)
+* React 19
+* Tailwind CSS v4
+* Framer Motion (preloader + zoom-in entrance)
+* PWA (installable, offline-capable, Workbox caching)
+* IndexedDB per-tab form persistence (Continue / Discard)
+* i18n: English, Spanish, Portuguese, Italian, Chinese — all tooltips and UI strings translated
+* Dark mode (OS-synced, persisted, flash-free)
+* QR code scanner with live camera, flip button, and inverted-code support
+* Telegram WebApp support
 
 ## :shipit: Special Thanks
 * To a great and wise mentor in all things computer-related, Jaimes.

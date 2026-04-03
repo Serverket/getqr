@@ -1,0 +1,112 @@
+feat(qr): add QR module style cycling + UX polish + i18n tooltip coverage
+
+Introduces a full QR module style system via qr-code-styling, resolves
+several rendering bugs, improves the control button layout, completes
+i18n tooltip coverage across all five languages, and fixes light/dark
+mode inconsistencies in the scanner viewport.
+
+────────────────────────────────────────────────────────────────────────
+FEATURES
+────────────────────────────────────────────────────────────────────────
+
+feat(qr/style): add QR module style cycle button (6 styles)
+  - Installed qr-code-styling v1.9.2 for client-side module rendering
+  - Added QR_STYLES constant: square, dots, rounded, extra-rounded,
+    classy, classy-rounded
+  - Added StyleDotIcon component — a live 2×2 SVG grid whose shape
+    reflects the active style (circles for dots, rounded rects for
+    rounded variants, sharp rects for square/classy)
+  - Added qrStyle state (default: 'square')
+  - Added cycleStyle() function cycling through all 6 styles on click
+  - Button placed alongside the rounded-corners button in ResolutionSelector,
+    highlighted blue when any non-square style is active
+
+feat(qr/style): styled QR in preview, download, copy, share
+  - QRImage rewritten as a proper React hook component; when qrStyle !=
+    'square', qr-code-styling renders a canvas into a div ref instead of
+    using the API <img> tag; gradient overlay, logo overlay, and rounded
+    clip all still apply on top via the same absolute-position mechanism
+  - generateQRCanvas updated: non-square styles use
+    qrCode.getRawData('png') as the base image, then the identical
+    gradient → logo pipeline runs over it
+  - downloadQR SVG path updated: non-square styles use
+    qrCode.getRawData('svg') instead of the qrserver.com API; the same
+    gradient / logo / clipPath injection is then applied
+
+feat(ui/layout): group color and style buttons with justify-between
+  - Wrapped gradient swatches in a left-aligned flex group
+  - Wrapped rounded + style buttons in a right-aligned flex group
+  - Outer row uses justify-between so the two groups sit on opposite ends
+    without a hard-coded separator line
+
+feat(i18n): full tooltip translation coverage for all 5 languages
+  - Added labelKey field to every GRADIENT_PRESETS entry
+    (gradientViolet / gradientAmber / gradientOcean / gradientSunset)
+  - Added labelKey field to every QR_STYLES entry
+    (styleSquare / styleDots / styleRounded / styleExtraRounded /
+     styleClassy / styleClassyRounded)
+  - Added qrStyleLabel key ("Style" / "Estilo" / "Stile" / "风格")
+  - Wired all 6 gradient swatch tooltips: translations[lang][preset.labelKey]
+  - Wired style button tooltip:
+    `${qrStyleLabel}: ${translations[lang][style.labelKey]}`
+  - All 11 new keys added for en, es, pt, it, zh
+
+────────────────────────────────────────────────────────────────────────
+BUG FIXES
+────────────────────────────────────────────────────────────────────────
+
+fix(canvas): logo blending on colored QR codes
+  - Gradient pixel-processing in generateQRCanvas now runs before the
+    logo is drawn; previously the gradient recolored the logo pixels too
+  - Matches SVG behaviour where gradient rect is below the logo <image>
+
+fix(svg): rounded corners breaking mix-blend-mode in SVG download
+  - Replaced CSS clip-path with native SVG <clipPath> + <g> wrapping
+  - mix-blend-mode on the gradient <rect> now works correctly inside the
+    clipped group
+
+fix(canvas): ObjectURL memory leak in generateQRCanvas
+  - URL.revokeObjectURL now called in both onload and onerror handlers
+  - Refactored into reusable blobToImg() helper to avoid duplication
+    between the API path and the qr-code-styling path
+
+fix(pwa): Telegram WebApp btoa stack overflow on large QR PNGs
+  - Replaced spread of Uint8Array into String.fromCharCode(...bytes)
+    with a character-by-character loop to avoid call stack exhaustion
+
+fix(persistence): logo changes not triggering auto-save
+  - Added logoData as a dependency to all three auto-save useEffect hooks
+    (vcard, text, url)
+
+fix(persistence): handleDiscard clearing logo across unrelated tabs
+  - Logo is now only cleared when the saved data for that tab contained
+    a logo
+
+fix(scanner): inverted QR codes not detected
+  - Set jsQR inversionAttempts to 'attemptBoth' so both normal and
+    inverted codes are decoded in a single pass
+
+────────────────────────────────────────────────────────────────────────
+STYLE / UX
+────────────────────────────────────────────────────────────────────────
+
+style(scanner): match Start Camera button to blue-500 brand color
+  - Was bg-violet-600; now bg-blue-500 hover:bg-blue-600, consistent
+    with the Save to Photos button
+
+style(scanner): camera viewport now respects light/dark mode
+  - All dark-only bg-gray-900 panels (idle, requesting, error) updated
+    to bg-gray-100 dark:bg-gray-900
+  - Icon circle: bg-gray-200 dark:bg-gray-800
+  - Error text: text-gray-600 dark:text-gray-300
+  - Error icon: text-red-500 dark:text-red-400
+
+────────────────────────────────────────────────────────────────────────
+FILES CHANGED
+────────────────────────────────────────────────────────────────────────
+
+  src/App.jsx          — QR style system, button layout, i18n tooltip fix,
+                         canvas/SVG pipeline, persistence fixes
+  src/QRScanner.jsx    — Camera viewport theming, button color
+  src/translations.json — 11 new keys × 5 languages = 55 new strings
+  package.json         — qr-code-styling v1.9.2 added to dependencies

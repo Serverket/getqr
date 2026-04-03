@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06B6D4"/>
+      <stop offset="40%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B"/>
+      <stop offset="50%" style="stop-color:#EF4444"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="50%" style="stop-color:#06B6D4"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="gradCenter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="96" fill="white"/>
+
+  <!-- Top-left finder pattern (cyan→violet→pink) -->
+  <rect x="64" y="64" width="164" height="164" rx="28" fill="url(#grad1)"/>
+  <rect x="88" y="88" width="116" height="116" rx="16" fill="white"/>
+  <rect x="108" y="108" width="76" height="76" rx="10" fill="url(#grad1)"/>
+
+  <!-- Top-right finder pattern (amber→red→pink) -->
+  <rect x="284" y="64" width="164" height="164" rx="28" fill="url(#grad2)"/>
+  <rect x="308" y="88" width="116" height="116" rx="16" fill="white"/>
+  <rect x="328" y="108" width="76" height="76" rx="10" fill="url(#grad2)"/>
+
+  <!-- Bottom-left finder pattern (emerald→cyan→violet) -->
+  <rect x="64" y="284" width="164" height="164" rx="28" fill="url(#grad3)"/>
+  <rect x="88" y="308" width="116" height="116" rx="16" fill="white"/>
+  <rect x="108" y="328" width="76" height="76" rx="10" fill="url(#grad3)"/>
+
+  <!-- Data module grid (bottom-right area) — decorative dots -->
+  <rect x="284" y="284" width="36" height="36" rx="8" fill="url(#gradCenter)" filter="url(#glow)"/>
+  <rect x="332" y="284" width="36" height="36" rx="8" fill="url(#grad2)"/>
+  <rect x="380" y="284" width="36" height="36" rx="8" fill="url(#grad1)"/>
+  <rect x="428" y="284" width="36" height="36" rx="8" fill="url(#grad3)"/>
+
+  <rect x="284" y="332" width="36" height="36" rx="8" fill="url(#grad3)"/>
+  <rect x="332" y="332" width="36" height="36" rx="8" fill="url(#gradCenter)" filter="url(#glow)"/>
+  <rect x="428" y="332" width="36" height="36" rx="8" fill="url(#grad2)"/>
+
+  <rect x="284" y="380" width="36" height="36" rx="8" fill="url(#grad2)"/>
+  <rect x="380" y="380" width="36" height="36" rx="8" fill="url(#gradCenter)" filter="url(#glow)"/>
+  <rect x="428" y="380" width="36" height="36" rx="8" fill="url(#grad1)"/>
+
+  <rect x="284" y="428" width="36" height="36" rx="8" fill="url(#grad1)"/>
+  <rect x="332" y="428" width="36" height="36" rx="8" fill="url(#grad3)"/>
+  <rect x="380" y="428" width="36" height="36" rx="8" fill="url(#grad2)"/>
+  <rect x="428" y="428" width="36" height="36" rx="8" fill="url(#gradCenter)" filter="url(#glow)"/>
+</svg>
