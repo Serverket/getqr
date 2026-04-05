@@ -5,6 +5,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2.2.0] — 2026-04-04
+
+### Added
+
+#### Full Offline QR Generation
+- **Eliminated all `api.qrserver.com` dependencies** — every QR code (preview, PNG download, SVG download, copy, share) is now generated entirely client-side via `qr-code-styling`.
+- **`getRawQRData()` helper** — centralises raw data resolution for all tab types (vCard, text, URL).
+- **`MiniQRPreview` component** — lightweight 40×40 canvas-based QR preview used in the `ResolutionSelector`, replacing the old API-fetched `<img>`.
+- Precache size: **22 entries, 707 KB** (~200 KB gzipped network transfer). Zero runtime network requests after install.
+
+#### Privacy Policy — Full i18n
+- All Privacy Policy content translated into all 5 languages (en, es, pt, it, zh) via dedicated translation keys.
+- Footer links ("Contribute", "MIT License") now use translated keys.
+- Privacy Policy page links use gradient styling matching the app brand.
+
+### Changed
+
+#### Dark Mode Toggle
+- **Emoji → SVG** — replaced invisible emoji sun/moon (`🌞`/`🌜`) with **Heroicons outline** SVG icons (sun with rays, crescent moon). Renders reliably on all platforms.
+- **Theme persistence fix** — removed the system `prefers-color-scheme` change listener that was overriding the user's manual toggle. `localStorage` value now persists correctly across reloads, PWA restarts, and offline usage. System preference is only used as an initial fallback for first-time visitors.
+
+#### vCard Tab — Conditional Panel
+- `ResolutionSelector` (colour/style controls) on the vCard tab now appears only after first and last name are entered, matching the behaviour of the Text and URL tabs.
+
+#### Workbox Configuration
+- Removed `runtimeCaching` for `api.qrserver.com` (no longer needed).
+- Simplified to precache-only strategy — all assets served from service worker cache.
+
+### Removed
+- **`getQRCodeUrl()` function** — deleted; was the sole entry point to the external QR API.
+- **7 dead assets** from `public/`: `chinchillaqr.svg`, `chinchillaqr.webp`, `chinchillaqr_hd.webp`, `chinchillaqr_ti.webp`, `chinchillaqr_wbg.webp`, `favicon-16x16.png`, `favicon-32x32.png` (−252 KB from precache).
+
+---
+
 ## [2.1.0] — 2026-04-03
 
 ### Added

@@ -43,30 +43,27 @@ const StyleDotIcon = ({ style }) => {
   );
 };
 
-const QRImage = ({ src, rawData, qrRounded, qrGradient, isNegative, logoData, qrStyle }) => {
+const QRImage = ({ rawData, qrRounded, qrGradient, isNegative, logoData, qrStyle }) => {
   const containerRef = useRef(null);
-  const isSquare = !qrStyle || qrStyle === 'square';
+  const dotType = (!qrStyle || qrStyle === 'square') ? 'square' : qrStyle;
   const clipStyle = qrRounded ? { clipPath: 'inset(0 round 1rem)', overflow: 'hidden' } : undefined;
 
   useEffect(() => {
-    if (isSquare || !containerRef.current || !rawData) return;
+    if (!containerRef.current || !rawData) return;
     containerRef.current.innerHTML = '';
     const qrCode = new QRCodeStyling({
       width: 192, height: 192, type: 'canvas',
       data: rawData,
-      dotsOptions: { type: qrStyle, color: isNegative ? '#ffffff' : '#000000' },
+      dotsOptions: { type: dotType, color: isNegative ? '#ffffff' : '#000000' },
       backgroundOptions: { color: isNegative ? '#000000' : '#ffffff' },
       qrOptions: { errorCorrectionLevel: 'H' },
     });
     qrCode.append(containerRef.current);
-  }, [rawData, qrStyle, isNegative, isSquare]);
+  }, [rawData, dotType, isNegative]);
 
   return (
     <div className={`relative mx-auto w-48 h-48${qrRounded ? ' bg-gray-100 dark:bg-gray-800' : ''}`}>
-      {isSquare
-        ? <img src={src} alt="QR Code" className="w-full h-full" style={clipStyle} />
-        : <div ref={containerRef} className="w-full h-full" style={clipStyle} />
-      }
+      <div ref={containerRef} className="w-full h-full" style={clipStyle} />
       {qrGradient && (
         <div
           className="absolute inset-0"
@@ -85,6 +82,23 @@ const QRImage = ({ src, rawData, qrRounded, qrGradient, isNegative, logoData, qr
       )}
     </div>
   );
+};
+
+const MiniQRPreview = ({ data, dotType, isNegative }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !data) return;
+    ref.current.innerHTML = '';
+    const qr = new QRCodeStyling({
+      width: 40, height: 40, type: 'canvas',
+      data,
+      dotsOptions: { type: dotType, color: isNegative ? '#ffffff' : '#000000' },
+      backgroundOptions: { color: isNegative ? '#000000' : '#ffffff' },
+      qrOptions: { errorCorrectionLevel: 'L' },
+    });
+    qr.append(ref.current);
+  }, [data, dotType, isNegative]);
+  return <div ref={ref} className="w-10 h-10 rounded overflow-hidden" />;
 };
 
 const TAB_ICONS = {
@@ -184,14 +198,7 @@ const App = () => {
   const clearDecided = (tab) =>
     sessionStorage.removeItem(`getqr:decided:${sessionId}:${tab}`);
 
-  // Dark mode and language preferences
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => setIsDark(e.matches);
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
+  // Language preference
   useEffect(() => {
     localStorage.setItem('selectedLanguage', selectedLanguage);
   }, [selectedLanguage]);
@@ -315,38 +322,25 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
     return encodeURIComponent(vCard);
   };
 
-  // QR code generation utilities
-  const getQRCodeUrl = (data, type = 'text') => {
-    const finalData = type === 'vcard' ? generateVCard() : encodeURIComponent(data);
-    const color = isNegative ? 'ffffff' : '000000';
-    const bgColor = isNegative ? '000000' : 'ffffff';
-    const isSvg = qrResolution === 'svg';
-    const size = isSvg ? '500' : qrResolution;
-    const format = isSvg ? '&format=svg' : '';
-    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${finalData}&color=${color}&bgcolor=${bgColor}${format}`;
-  };
+  // Compute raw QR data string for any tab type
+  const getRawQRData = (data, type) =>
+    type === 'vcard' ? decodeURIComponent(generateVCard()) : data;
 
   const downloadQR = async (data, type, filename) => {
+    const rawData = getRawQRData(data, type);
+    const dotType = (!qrStyle || qrStyle === 'square') ? 'square' : qrStyle;
+
     if (qrResolution === 'svg') {
       try {
-        let svgText;
-        if (qrStyle !== 'square') {
-          const rawData = type === 'vcard' ? decodeURIComponent(data) : data;
-          const qrCode = new QRCodeStyling({
-            width: 500, height: 500, type: 'svg',
-            data: rawData,
-            dotsOptions: { type: qrStyle, color: isNegative ? '#ffffff' : '#000000' },
-            backgroundOptions: { color: isNegative ? '#000000' : '#ffffff' },
-            qrOptions: { errorCorrectionLevel: 'H' },
-          });
-          const blob = await qrCode.getRawData('svg');
-          svgText = await blob.text();
-        } else {
-          const svgUrl = getQRCodeUrl(data, type);
-          const res = await fetch(svgUrl);
-          if (!res.ok) throw new Error('Network error');
-          svgText = await res.text();
-        }
+        const qrCode = new QRCodeStyling({
+          width: 500, height: 500, type: 'svg',
+          data: rawData,
+          dotsOptions: { type: dotType, color: isNegative ? '#ffffff' : '#000000' },
+          backgroundOptions: { color: isNegative ? '#000000' : '#ffffff' },
+          qrOptions: { errorCorrectionLevel: 'H' },
+        });
+        const svgBlob = await qrCode.getRawData('svg');
+        let svgText = await svgBlob.text();
         const wMatch = svgText.match(/width="(\d+)"/);
         const hMatch = svgText.match(/height="(\d+)"/);
         const svgW = wMatch ? parseInt(wMatch[1]) : 500;
@@ -405,49 +399,35 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
     const tryDownload = async () => {
       try {
         attempt++;
-        // Strategy 1: Direct base64 download for Telegram
-        if (window.Telegram?.WebApp?.downloadFile) {
-          const qrUrl = getQRCodeUrl(data, type);
-          const response = await fetch(qrUrl);
-          if (!response.ok) throw new Error('Network response error');
+        const canvas = await generateQRCanvas(data, type);
+        if (!canvas) throw new Error('Canvas generation failed');
 
-          // Convert directly to base64
-          const buffer = await response.arrayBuffer();
-          const bytes = new Uint8Array(buffer);
-          let binary = '';
-          for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-          const base64 = btoa(binary);
+        // Telegram WebApp direct download
+        if (window.Telegram?.WebApp?.downloadFile) {
+          const dataUrl = canvas.toDataURL();
+          const base64 = dataUrl.split(',')[1];
           window.Telegram.WebApp.downloadFile(base64, `${filename}.png`);
           return;
         }
 
-        // Strategy 2: Canvas-based download with forced user gesture
-        const canvas = await generateQRCanvas(data, type);
-        if (!canvas) throw new Error('Canvas generation failed');
-
-        // Strategy 3: Mixed blob/base64 approach
         const blob = await new Promise(resolve =>
           canvas.toBlob(resolve, 'image/png', 1)
         );
 
-        // Strategy 4: Multiple download methods
         const finalAttempt = async () => {
           try {
-            // Method 4a: Direct file API
             if (window.Telegram?.WebApp?.openLink) {
               const dataUrl = canvas.toDataURL();
               window.Telegram.WebApp.openLink(dataUrl);
               return;
             }
 
-            // Method 4b: Simulated click with blob
             const url = URL.createObjectURL(blob);
             const tempLink = document.createElement('a');
             tempLink.href = url;
             tempLink.download = `${filename}.png`;
             tempLink.style.display = 'none';
 
-            // iOS requires actual user interaction
             const clickEvent = new MouseEvent('click', {
               view: window,
               bubbles: true,
@@ -457,20 +437,17 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
             document.body.appendChild(tempLink);
             tempLink.dispatchEvent(clickEvent);
 
-            // Cleanup with retry safeguard
             setTimeout(() => {
               document.body.removeChild(tempLink);
               URL.revokeObjectURL(url);
             }, 1000);
 
           } catch (error) {
-            // Final fallback: Open in new tab
             const dataUrl = canvas.toDataURL();
             window.open(dataUrl, '_blank');
           }
         };
 
-        // Execute final attempt sequence
         await finalAttempt();
 
       } catch (error) {
@@ -482,7 +459,6 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
       }
     };
 
-    // Initial execution
     try {
       await tryDownload();
     } catch (finalError) {
@@ -490,10 +466,9 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
     }
   };
 
-  // Canvas generation with validation
+  // Canvas generation with validation (fully client-side, no external API)
   const generateQRCanvas = async (data, type) => {
     try {
-      // Helper: load a blob URL into an HTMLImageElement
       const blobToImg = (blob) => new Promise((resolve, reject) => {
         const url = URL.createObjectURL(blob);
         const timer = setTimeout(() => { URL.revokeObjectURL(url); reject(new Error('Image load timeout')); }, 5000);
@@ -503,30 +478,22 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
         img.src = url;
       });
 
-      let img;
-      if (qrStyle !== 'square') {
-        const rawData = type === 'vcard' ? decodeURIComponent(data) : data;
-        const size = qrResolution === 'svg' ? 500 : parseInt(qrResolution);
-        const qrCode = new QRCodeStyling({
-          width: size, height: size, type: 'canvas',
-          data: rawData,
-          dotsOptions: { type: qrStyle, color: isNegative ? '#ffffff' : '#000000' },
-          backgroundOptions: { color: isNegative ? '#000000' : '#ffffff' },
-          qrOptions: { errorCorrectionLevel: 'H' },
-        });
-        const blob = await qrCode.getRawData('png');
-        img = await blobToImg(blob);
-      } else {
-        const qrUrl = getQRCodeUrl(data, type);
-        const response = await fetch(qrUrl);
-        if (!response.ok) throw new Error('Invalid QR code response');
-        img = await blobToImg(await response.blob());
-      }
+      const rawData = getRawQRData(data, type);
+      const size = qrResolution === 'svg' ? 500 : parseInt(qrResolution);
+      const dotType = (!qrStyle || qrStyle === 'square') ? 'square' : qrStyle;
+      const qrCode = new QRCodeStyling({
+        width: size, height: size, type: 'canvas',
+        data: rawData,
+        dotsOptions: { type: dotType, color: isNegative ? '#ffffff' : '#000000' },
+        backgroundOptions: { color: isNegative ? '#000000' : '#ffffff' },
+        qrOptions: { errorCorrectionLevel: 'H' },
+      });
+      const blob = await qrCode.getRawData('png');
+      const img = await blobToImg(blob);
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
-      // Set canvas dimensions
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       if (qrRounded) {
@@ -610,7 +577,7 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ title: 'GetQR', files: [file] });
       } else if (navigator.share) {
-        await navigator.share({ title: 'GetQR', url: getQRCodeUrl(data, type) });
+        await navigator.share({ title: 'GetQR', text: 'QR Code from GetQR' });
       }
     } catch (err) {
       if (err.name !== 'AbortError') console.error('Share failed:', err);
@@ -772,13 +739,10 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
           (activeTab === 'url' && urlData)) && (
           <div className="flex items-center ml-2">
             <div className="relative">
-              <img
-                src={getQRCodeUrl(
-                  activeTab === 'vcard' ? vCardData : activeTab === 'text' ? textData : urlData,
-                  activeTab
-                )}
-                alt="QR preview"
-                className="w-10 h-10 rounded"
+              <MiniQRPreview
+                data={activeTab === 'vcard' ? decodeURIComponent(generateVCard()) : activeTab === 'text' ? textData : urlData}
+                dotType={(!qrStyle || qrStyle === 'square') ? 'square' : qrStyle}
+                isNegative={isNegative}
               />
               <span
                 className="flex absolute inset-0 justify-center items-center text-3xl cursor-pointer"
@@ -873,9 +837,17 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
             </select>
             <button
               onClick={toggleDarkMode}
-              className="flex justify-center items-center p-2 w-10 h-10 text-white rounded-full transition-colors duration-300 bg-neutral-400 hover:bg-neutral-500 dark:bg-gray-700"
+              className="flex justify-center items-center p-2 w-10 h-10 rounded-full transition-colors duration-300 bg-neutral-400 hover:bg-neutral-500 dark:bg-gray-700"
             >
-              {isDark ? '🌞' : '🌜'}
+              {isDark ? (
+                <svg className="w-5 h-5 text-yellow-300" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
@@ -1013,7 +985,7 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
                     {/* Left Column */}
                     <div className="space-y-6">
                       <div className="p-6 bg-white rounded-lg border border-gray-300 shadow-xs dark:border-gray-600 dark:bg-gray-700">
-                        <QRImage src={getQRCodeUrl(vCardData, 'vcard')} rawData={decodeURIComponent(generateVCard())} qrRounded={qrRounded} qrGradient={qrGradient} isNegative={isNegative} logoData={logoData} qrStyle={qrStyle} />
+                        <QRImage rawData={decodeURIComponent(generateVCard())} qrRounded={qrRounded} qrGradient={qrGradient} isNegative={isNegative} logoData={logoData} qrStyle={qrStyle} />
                       </div>
                       <ResolutionSelector />
                     </div>
@@ -1049,7 +1021,7 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
                     {/* Left Column */}
                     <div className="space-y-6">
                       <div className="p-6 bg-white rounded-lg border border-gray-300 shadow-xs dark:border-gray-600 dark:bg-gray-700">
-                        <QRImage src={getQRCodeUrl(textData)} rawData={textData} qrRounded={qrRounded} qrGradient={qrGradient} isNegative={isNegative} logoData={logoData} qrStyle={qrStyle} />
+                        <QRImage rawData={textData} qrRounded={qrRounded} qrGradient={qrGradient} isNegative={isNegative} logoData={logoData} qrStyle={qrStyle} />
                       </div>
                       <ResolutionSelector />
                     </div>
@@ -1089,7 +1061,7 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
                     {/* Left Column */}
                     <div className="space-y-6">
                       <div className="p-6 bg-white rounded-lg border border-gray-300 shadow-xs dark:border-gray-600 dark:bg-gray-700">
-                        <QRImage src={getQRCodeUrl(urlData)} rawData={urlData} qrRounded={qrRounded} qrGradient={qrGradient} isNegative={isNegative} logoData={logoData} qrStyle={qrStyle} />
+                        <QRImage rawData={urlData} qrRounded={qrRounded} qrGradient={qrGradient} isNegative={isNegative} logoData={logoData} qrStyle={qrStyle} />
                       </div>
                       <ResolutionSelector />
                     </div>
