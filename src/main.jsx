@@ -16,7 +16,12 @@ const storedIsDark = (() => {
   }
 })();
 
-const storedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+const storedLanguage = (() => {
+  const stored = localStorage.getItem('selectedLanguage');
+  if (stored) return stored;
+  const base = (navigator.language || 'en').split('-')[0].toLowerCase();
+  return ['en', 'es', 'pt', 'it', 'zh'].includes(base) ? base : 'en';
+})();
 
 // Sync <html> dark class immediately so no flash occurs on any route
 document.documentElement.classList.toggle('dark', storedIsDark);

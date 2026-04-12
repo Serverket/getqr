@@ -95,7 +95,12 @@
     "privacyInquiriesTitle": "Inquiries",
     "privacyInquiriesText": "Any inquiries shall be sent via",
     "contribute": "Contribute",
-    "license": "MIT License"
+    "license": "MIT License",
+    "installTitle": "Install GetQR",
+    "installDescription": "Add to your home screen for quick access and offline use",
+    "installButton": "Install",
+    "installIOSStep": "Tap {icon} then \"Add to Home Screen\"",
+    "installDismiss": "Not now"
   },
   "es": {
     "vcard": "Contacto",
@@ -193,7 +198,12 @@
     "privacyInquiriesTitle": "Consultas",
     "privacyInquiriesText": "Cualquier consulta debe enviarse a través de",
     "contribute": "Contribuir",
-    "license": "Licencia MIT"
+    "license": "Licencia MIT",
+    "installTitle": "Instalar GetQR",
+    "installDescription": "Agrega a tu pantalla de inicio para acceso r\u00e1pido y uso sin conexi\u00f3n",
+    "installButton": "Instalar",
+    "installIOSStep": "Toca {icon} y luego \"A\u00f1adir a pantalla de inicio\"",
+    "installDismiss": "Ahora no"
   },
   "pt": {
     "vcard": "Cartão de Visita",
@@ -291,7 +301,12 @@
     "privacyInquiriesTitle": "Questões",
     "privacyInquiriesText": "Qualquer questão deve ser enviada através de",
     "contribute": "Contribuir",
-    "license": "Licença MIT"
+    "license": "Licença MIT",
+    "installTitle": "Instalar GetQR",
+    "installDescription": "Adicione à tela inicial para acesso rápido e uso offline",
+    "installButton": "Instalar",
+    "installIOSStep": "Toque em {icon} e depois \"Adicionar à tela inicial\"",
+    "installDismiss": "Agora não"
   },
   "it": {
     "vcard": "V-Card",
@@ -389,7 +404,12 @@
     "privacyInquiriesTitle": "Richieste",
     "privacyInquiriesText": "Qualsiasi richiesta va inviata tramite",
     "contribute": "Contribuisci",
-    "license": "Licenza MIT"
+    "license": "Licenza MIT",
+    "installTitle": "Installa GetQR",
+    "installDescription": "Aggiungi alla schermata iniziale per un accesso rapido e l'uso offline",
+    "installButton": "Installa",
+    "installIOSStep": "Tocca {icon} poi \"Aggiungi alla schermata Home\"",
+    "installDismiss": "Non ora"
   },
   "zh": {
     "vcard": "电子名片",
@@ -487,6 +507,11 @@
     "privacyInquiriesTitle": "查询",
     "privacyInquiriesText": "任何查询都应通过",
     "contribute": "贡献",
-    "license": "MIT 许可证"
+    "license": "MIT 许可证",
+    "installTitle": "安装 GetQR",
+    "installDescription": "添加到主屏幕以快速访问和离线使用",
+    "installButton": "安装",
+    "installIOSStep": "点击 {icon} 然后 \"添加到主屏幕\"",
+    "installDismiss": "稍后再说"
   }
 }

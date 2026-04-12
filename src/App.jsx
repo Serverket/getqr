@@ -6,6 +6,7 @@ import './App.css';
 import translations from './translations.json';
 import useFormPersistence from './useFormPersistence';
 import QRScanner from './QRScanner.jsx';
+import InstallBanner from './InstallBanner.jsx';
 
 const QR_STYLES = [
   { id: 'square',         labelKey: 'styleSquare' },
@@ -132,7 +133,10 @@ const App = () => {
     return storedIsDark ? JSON.parse(storedIsDark) : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const [selectedLanguage, setSelectedLanguage] = useState(() => {
-    return localStorage.getItem('selectedLanguage') || 'en';
+    const stored = localStorage.getItem('selectedLanguage');
+    if (stored) return stored;
+    const base = (navigator.language || 'en').split('-')[0].toLowerCase();
+    return ['en', 'es', 'pt', 'it', 'zh'].includes(base) ? base : 'en';
   });
   const [logoData, setLogoData] = useState(null);
   const [isNegative, setIsNegative] = useState(false);
@@ -1122,6 +1126,9 @@ ${vCardData.position ? `TITLE:${vCardData.position}\n` : ''}${vCardData.company 
           </button>
         </div>
       )}
+
+      {/* PWA install banner */}
+      <InstallBanner language={selectedLanguage} />
 
     </motion.div>
   );
